@@ -265,51 +265,6 @@
       <div class="kpi-row" id="kpiRow"></div>
     </div>
 
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <h2>Testing progress toward target</h2>
-          <div class="subtitle">Unique participants tested, per facility</div>
-        </div>
-      </div>
-      <div class="meter-list" id="meterList"></div>
-      <div class="badge-legend">
-        <span><span class="badge good">✓ On track</span> ≥ expected pace, or target reached</span>
-        <span><span class="badge warning">⚠ Slightly behind</span> below expected pace</span>
-        <span><span class="badge critical">✕ Behind schedule</span> well below expected pace</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <h2>Kit performance by facility</h2>
-          <div class="subtitle">How well the Afinion™ 2 device is performing at each site — QC pass rate and technical issues</div>
-        </div>
-      </div>
-      <div class="perf-list" id="perfList"></div>
-      <div class="badge-legend">
-        <span><span class="badge good">✓ Good</span> QC pass ≥ 90%, few/no technical issues</span>
-        <span><span class="badge warning">⚠ Fair</span> QC pass 70–89%, or occasional issues</span>
-        <span><span class="badge critical">✕ Needs attention</span> QC pass &lt; 70%, or frequent issues</span>
-        <span><span class="badge muted">– No QC data</span> no QC checks recorded yet</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <h2>Quality control by facility</h2>
-          <div class="subtitle">Share of QC checks that passed</div>
-        </div>
-      </div>
-      <div class="legend">
-        <span class="legend-item"><span class="swatch" style="background:var(--status-good)"></span>Pass</span>
-        <span class="legend-item"><span class="swatch" style="background:var(--status-critical)"></span>Fail</span>
-      </div>
-      <div id="qcChart"></div>
-    </div>
-
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
@@ -730,48 +685,6 @@ function renderKPIs(totals) {
   });
 }
 
-function renderMeters(facilities) {
-  const list = document.getElementById("meterList");
-  list.innerHTML = "";
-  facilities.forEach(f => {
-    const p = pct(f.tested, CONFIG.targetPerFacility);
-    const badge = progressBadge(f.tested, CONFIG.targetPerFacility);
-    const row = el("div", "meter-row");
-    row.appendChild(el("div", "meter-top",
-      `<span><span class="fac">${f.name}</span><span class="county">${f.county}</span></span>
-       <span>${badgeHtml(badge)} <strong style="margin-left:8px;">${Math.min(p,100)}%</strong></span>`));
-    const track = el("div", "meter-track");
-    const fill = el("div", `meter-fill${p >= 100 ? " over" : ""}`);
-    fill.style.width = Math.min(p, 100) + "%";
-    fill.title = `${f.tested} of ${CONFIG.targetPerFacility} tested`;
-    track.appendChild(fill);
-    row.appendChild(track);
-    row.appendChild(el("div", "meter-count", `${f.tested} of ${CONFIG.targetPerFacility} patients tested`));
-    list.appendChild(row);
-  });
-}
-
-function renderPerformance(facilities) {
-  const list = document.getElementById("perfList");
-  list.innerHTML = "";
-  facilities.forEach(f => {
-    const badge = performanceBadge(f.qcCheckedCount, f.qcPassCount, f.issuesCount, f.tested);
-    const row = el("div", "perf-row");
-    row.appendChild(el("div", "perf-name", `${f.name}<span class="county">${f.county}</span>`));
-    const stats = el("div", "perf-stats",
-      `<span>QC pass: ${f.qcCheckedCount > 0 ? f.qcPassPct + "%" : "—"}</span>
-       <span>Technical issues: ${f.issuesCount} of ${f.tested} tests</span>
-       <span>Avg TAT: ${f.avgTat ?? "—"}${f.avgTat !== null ? " min" : ""}</span>`);
-    const right = el("div", "", badgeHtml(badge));
-    right.style.display = "flex";
-    right.style.alignItems = "center";
-    row.appendChild(stats);
-    row.appendChild(right);
-    list.appendChild(row);
-  });
-  if (!facilities.length) list.appendChild(el("div", "subtitle", "No data for the current filter."));
-}
-
 function renderBarChart(containerId, items, opts = {}) {
   const container = document.getElementById(containerId);
   container.innerHTML = "";
@@ -789,22 +702,6 @@ function renderBarChart(containerId, items, opts = {}) {
     container.appendChild(row);
   });
   if (!items.length) container.appendChild(el("div", "subtitle", "No data for the current filter."));
-}
-
-function renderQC(facilities) {
-  const wrap = document.getElementById("qcChart");
-  wrap.innerHTML = "";
-  facilities.forEach(f => {
-    const row = el("div", "stacked-row");
-    row.appendChild(el("div", "stacked-label", `<span>${f.name}</span><span>${f.qcPassPct}% pass</span>`));
-    const track = el("div", "stacked-track");
-    const good = el("div", "stacked-seg good"); good.style.width = f.qcPassPct + "%"; good.title = `Pass: ${f.qcPassPct}%`;
-    const bad = el("div", "stacked-seg critical"); bad.style.width = f.qcFailPct + "%"; bad.title = `Fail: ${f.qcFailPct}%`;
-    track.appendChild(good); track.appendChild(bad);
-    row.appendChild(track);
-    wrap.appendChild(row);
-  });
-  if (!facilities.length) wrap.appendChild(el("div", "subtitle", "No data for the current filter."));
 }
 
 function renderFacilityTable(facilities) {
@@ -862,9 +759,6 @@ function renderAll() {
   const filtered = applyFilters(ALL_PATIENTS);
   const summary = summarize(filtered);
   renderKPIs(summary.totals);
-  renderMeters(summary.facilities);
-  renderPerformance(summary.facilities);
-  renderQC(summary.facilities);
   renderBarChart("tatChart", summary.facilities.filter(f => f.avgTat !== null).map(f => ({ label: f.name, value: f.avgTat })), { suffix: " min" });
   renderBarChart("biomarkerChart", Object.entries(summary.biomarkerCounts).map(([code, count]) => ({ label: BIOMARKER_LABELS[code] || code, value: count })));
   renderBarChart("testTypeChart", Object.entries(summary.totals.testCounts).map(([code, count]) => ({ label: TEST_LABELS[code] || code, value: count })));
