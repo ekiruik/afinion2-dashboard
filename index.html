@@ -134,16 +134,6 @@
   .stat-tile .value { font-size: 26px; font-weight: 700; line-height: 1; }
   .stat-tile .sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 
-  /* ---------- meters (progress toward 100-patient target) ---------- */
-  .meter-list { display: flex; flex-direction: column; gap: 16px; }
-  .meter-row .meter-top { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 6px; }
-  .meter-row .meter-top .fac { font-weight: 600; }
-  .meter-row .meter-top .county { color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
-  .meter-track { position: relative; height: 16px; border-radius: 8px; background: var(--gridline); overflow: hidden; }
-  .meter-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 8px; background: var(--seq-450); transition: width .4s ease; }
-  .meter-fill.over { background: var(--status-good); }
-  .meter-count { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-
   /* ---------- bar chart (single hue, thin, rounded end) ---------- */
   .bar-chart { display: flex; flex-direction: column; gap: 10px; }
   .bar-row { display: grid; grid-template-columns: 120px 1fr 60px; align-items: center; gap: 10px; font-size: 12.5px; }
@@ -151,23 +141,6 @@
   .bar-track { position: relative; height: 14px; background: var(--gridline); border-radius: 4px; }
   .bar-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px; background: var(--seq-450); }
   .bar-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-primary); font-weight: 600; }
-
-  /* ---------- grouped bar (pipeline by facility) ---------- */
-  .grouped-wrap { display: flex; flex-direction: column; gap: 18px; }
-  .grouped-row .grouped-label { font-size: 13.5px; font-weight: 600; margin-bottom: 8px; }
-  .grouped-bars { display: flex; flex-direction: column; gap: 6px; }
-  .grouped-bar-item { display: grid; grid-template-columns: 90px 1fr 40px; align-items: center; gap: 8px; font-size: 12.5px; }
-  .grouped-bar-item .swatch-label { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
-  .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-size: 12.5px; color: var(--text-secondary); }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-
-  /* ---------- stacked bar (QC pass/fail, status colors) ---------- */
-  .stacked-row { margin-bottom: 14px; }
-  .stacked-row .stacked-label { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .stacked-track { display: flex; height: 18px; border-radius: 4px; overflow: hidden; background: var(--gridline); }
-  .stacked-seg.good { background: var(--status-good); }
-  .stacked-seg.critical { background: var(--status-critical); }
 
   /* ---------- tables ---------- */
   table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -183,21 +156,6 @@
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
 
-  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
-  .badge.good { background: color-mix(in srgb, var(--status-good) 16%, transparent); color: var(--status-good); }
-  .badge.critical { background: color-mix(in srgb, var(--status-critical) 16%, transparent); color: var(--status-critical); }
-  .badge.warning { background: color-mix(in srgb, var(--status-warning) 22%, transparent); color: #8a5a00; }
-  .badge.muted { background: color-mix(in srgb, var(--text-muted) 16%, transparent); color: var(--text-muted); }
-
-  /* ---------- kit performance list ---------- */
-  .perf-list { display: flex; flex-direction: column; gap: 10px; }
-  .perf-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-              padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; flex-wrap: wrap; }
-  .perf-row .perf-name { font-weight: 600; font-size: 13.5px; }
-  .perf-row .perf-name .county { color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
-  .perf-row .perf-stats { font-size: 12px; color: var(--text-muted); display: flex; gap: 14px; flex-wrap: wrap; }
-  .badge-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); margin-top: 12px; }
-
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
   .empty-state code { background: var(--page-plane); padding: 2px 6px; border-radius: 4px; }
 
@@ -206,10 +164,51 @@
   #configPanel summary { cursor: pointer; font-weight: 600; color: var(--text-primary); }
 
   footer { text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px 0 6px; }
+
+  /* ---------- login gate ---------- */
+  #loginGate {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--page-plane); padding: 20px;
+  }
+  .login-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 14px;
+    padding: 32px 28px; max-width: 360px; width: 100%; text-align: center;
+  }
+  .login-card h1 { font-size: 17px; margin-bottom: 6px; color: var(--text-primary); }
+  .login-card .login-subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; }
+  .login-card input[type="password"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; margin-bottom: 12px; background: var(--page-plane); color: var(--text-primary);
+    font-family: inherit; box-sizing: border-box;
+  }
+  .login-card button.btn { width: 100%; padding: 9px 12px; }
+  .login-error { color: var(--status-critical); font-size: 12.5px; margin-top: 10px; min-height: 16px; }
+  .login-note { color: var(--text-muted); font-size: 11px; margin-top: 18px; line-height: 1.4; }
+  #appRoot { display: none; }
+  .session-badge { font-size: 12px; color: var(--text-muted); }
+  .session-badge button { background: none; border: none; color: var(--series-1); cursor: pointer;
+    font-size: 12px; padding: 0; margin-left: 6px; text-decoration: underline; font-family: inherit; }
 </style>
 </head>
 <body>
-<div class="viz-root wrap">
+
+<div id="loginGate" class="viz-root">
+  <div class="login-card">
+    <h1>Afinion™ 2 Evaluation — Monitoring Dashboard</h1>
+    <p class="login-subtitle">NASCOP · enter your access code to continue</p>
+    <form id="loginForm">
+      <input type="password" id="accessCodeInput" placeholder="Access code" autocomplete="off" autofocus />
+      <button type="submit" class="btn primary">Enter</button>
+    </form>
+    <p id="loginError" class="login-error"></p>
+    <p class="login-note">This screen limits casual access to this link only — it is not a real security
+    control. This is a static page with no server, so the access codes and underlying data source are visible
+    to anyone who views the page source. Do not rely on this alone to protect sensitive data.</p>
+  </div>
+</div>
+
+<div id="appRoot" class="viz-root wrap">
 
   <div class="brand-bar">
     <div class="brand-org moh">
@@ -240,6 +239,7 @@
       </select>
       <button class="btn primary" id="refreshBtn">Refresh</button>
       <span id="lastUpdated">Not yet loaded</span>
+      <span class="session-badge" id="sessionBadge"></span>
     </div>
   </header>
 
@@ -316,28 +316,11 @@
       <div class="table-scroll">
         <table class="data-table" id="facilityTable">
           <thead><tr>
-            <th>Facility</th><th>County</th><th>Tested</th><th>Target</th><th>Progress</th>
-            <th>Avg TAT (min)</th><th>Abnormal %</th><th>QC pass %</th><th>Kit performance</th>
+            <th>Facility</th><th>County</th><th>Tested</th><th>Target</th><th>Avg TAT (min)</th>
           </tr></thead>
           <tbody></tbody>
         </table>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div>
-          <h2>Technical issues log</h2>
-          <div class="subtitle">Most recent first — from the Lab Officer Report</div>
-        </div>
-      </div>
-      <div class="table-scroll">
-        <table class="data-table" id="issuesTable">
-          <thead><tr><th>Date</th><th>Facility</th><th>Device serial</th><th>Issue</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p id="noIssues" class="subtitle" style="display:none; margin-top:10px;">No technical issues reported for the current filter. ✅</p>
     </div>
 
   </div>
@@ -399,6 +382,24 @@ const CONFIG = {
   evaluationStartDate: "",   // e.g. "2026-08-01"
   evaluationEndDate: "",     // e.g. "2026-11-30"
 };
+
+/* =========================================================================
+   ACCESS CODES — a soft, casual-access screen, NOT real security. This is a
+   static file with no server: anyone who views page source can read these
+   codes and the Apps Script URL above, and load the data directly. Use this
+   only to keep the link from being casually wandered into, not to protect
+   sensitive data. Edit the codes and facility mapping below as needed.
+   "facility" role locks the dashboard to that one facility's data (with the
+   facility filter hidden). "national" role sees every facility and can use
+   the facility filter normally.
+   ========================================================================= */
+const ACCESS_CODES = {
+  "MBAGATHI2026":  { role: "facility", facility: "mbagathi",  label: "Mbagathi Hospital" },
+  "OTHAYA2026":    { role: "facility", facility: "othaya",    label: "Othaya Sub-County Hospital" },
+  "THIKA2026":     { role: "facility", facility: "thika_l5",  label: "Thika Level 5 Hospital" },
+  "NASCOP2026":    { role: "national", label: "NASCOP / National" },
+};
+let CURRENT_ACCESS = null;
 
 document.getElementById("targetPerFacilityLabel").textContent = CONFIG.targetPerFacility;
 document.getElementById("refreshIntervalLabel").textContent = CONFIG.refreshIntervalMinutes;
@@ -525,7 +526,11 @@ function buildPatients(lab) {
    FILTERING
    ========================================================================= */
 function applyFilters(patients) {
-  const facility = document.getElementById("facilityFilter").value;
+  // A facility-scoped access code always restricts to that one facility,
+  // regardless of what the (hidden, in that case) dropdown says.
+  const facility = CURRENT_ACCESS?.role === "facility"
+    ? CURRENT_ACCESS.facility
+    : document.getElementById("facilityFilter").value;
   const range = document.getElementById("dateRangeFilter").value;
   const now = new Date();
   return patients.filter(p => {
@@ -548,7 +553,6 @@ const BIOMARKER_LABELS = { hba1c: "HbA1c", crp: "CRP", total_chol: "Total Choles
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 100) : 0; }
 function avg(nums) { const v = nums.filter(n => n !== null && !isNaN(n)); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; }
 
-const BADGE_ICON = { good: "✓", warning: "⚠", critical: "✕", muted: "–" };
 const TEST_LABELS = { hba1c: "HbA1c", crp: "CRP", lipid: "Lipid Panel", acr: "Urine ACR" };
 
 // Total clients tested for each test type (from the Lab Officer Report's
@@ -560,45 +564,6 @@ function countTests(rows) {
     lipid: rows.filter(r => isYes(r.lipid_panel_performed)).length,
     acr: rows.filter(r => isYes(r.acr_performed)).length,
   };
-}
-
-// PROGRESS indicator — is enrollment toward the 100-patient target on pace?
-// With both evaluation dates set, compares actual % against the % of the
-// evaluation period elapsed. Otherwise falls back to fixed bands.
-function progressBadge(enrolled, target) {
-  const actualPct = target > 0 ? (enrolled / target) * 100 : 0;
-  if (actualPct >= 100) return { level: "good", label: "Target reached" };
-
-  const { evaluationStartDate: start, evaluationEndDate: end } = CONFIG;
-  if (start && end) {
-    const s = new Date(start), e = new Date(end), now = new Date();
-    const totalMs = e - s;
-    if (totalMs > 0) {
-      const elapsedMs = Math.min(Math.max(now - s, 0), totalMs);
-      const expectedPct = (elapsedMs / totalMs) * 100;
-      if (actualPct >= expectedPct) return { level: "good", label: "On track" };
-      if (actualPct >= expectedPct * 0.7) return { level: "warning", label: "Slightly behind" };
-      return { level: "critical", label: "Behind schedule" };
-    }
-  }
-  if (actualPct >= 66) return { level: "good", label: "On track" };
-  if (actualPct >= 33) return { level: "warning", label: "In progress" };
-  return { level: "critical", label: "Behind" };
-}
-
-// PERFORMANCE indicator — how well is the Afinion™ 2 kit performing at this
-// facility, based on QC pass rate and how often technical issues come up.
-function performanceBadge(qcCheckedCount, qcPassCount, issuesCount, testedCount) {
-  if (qcCheckedCount === 0) return { level: "muted", label: "No QC data" };
-  const qcPct = pct(qcPassCount, qcCheckedCount);
-  const issueRate = testedCount > 0 ? pct(issuesCount, testedCount) : 0;
-  if (qcPct >= 90 && issueRate <= 10) return { level: "good", label: "Good" };
-  if (qcPct >= 70 && issueRate <= 25) return { level: "warning", label: "Fair" };
-  return { level: "critical", label: "Needs attention" };
-}
-
-function badgeHtml(b) {
-  return `<span class="badge ${b.level}">${BADGE_ICON[b.level]} ${b.label}</span>`;
 }
 
 function summarize(patients) {
@@ -672,7 +637,6 @@ function renderKPIs(totals) {
     { label: "Avg. turnaround", value: totals.avgTat !== null ? `${totals.avgTat} min` : "—", sub: "Collection → result" },
     { label: "Abnormal results", value: `${totals.abnormalPct}%`, sub: "Of patients tested" },
     { label: "QC pass rate", value: `${totals.qcPassPct}%`, sub: "Of QC checks performed" },
-    { label: "Technical issues", value: `${totals.issuesPct}%`, sub: "Of tests, device issue reported" },
   ];
   const row = document.getElementById("kpiRow");
   row.innerHTML = "";
@@ -708,13 +672,9 @@ function renderFacilityTable(facilities) {
   const tbody = document.querySelector("#facilityTable tbody");
   tbody.innerHTML = "";
   facilities.forEach(f => {
-    const progress = progressBadge(f.tested, CONFIG.targetPerFacility);
-    const performance = performanceBadge(f.qcCheckedCount, f.qcPassCount, f.issuesCount, f.tested);
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${f.name}</td><td>${f.county}</td><td>${f.tested}</td><td>${CONFIG.targetPerFacility}</td>
-      <td>${badgeHtml(progress)}</td>
-      <td>${f.avgTat ?? "—"}</td><td>${f.abnormalPct}%</td>
-      <td>${f.qcPassPct}%</td><td>${badgeHtml(performance)}</td>`;
+      <td>${f.avgTat ?? "—"}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -730,21 +690,14 @@ function renderTestTypeTable(facilities) {
   });
 }
 
-function renderIssues(issues) {
-  const tbody = document.querySelector("#issuesTable tbody");
-  const noIssues = document.getElementById("noIssues");
-  tbody.innerHTML = "";
-  if (!issues.length) { noIssues.style.display = "block"; return; }
-  noIssues.style.display = "none";
-  issues.slice(0, 25).forEach(i => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${i.report_date || "—"}</td><td>${i.facility_name}</td><td>${norm(i.device_serial) || "—"}</td><td>${norm(i.technical_issues_specify) || "—"}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
 function populateFacilityFilter(facilities) {
   const select = document.getElementById("facilityFilter");
+  if (CURRENT_ACCESS?.role === "facility") {
+    // Facility-scoped access: no choice to make, so hide the dropdown entirely.
+    select.style.display = "none";
+    return;
+  }
+  select.style.display = "";
   const current = select.value;
   select.innerHTML = `<option value="">All facilities</option>` + facilities.map(f => `<option value="${f.name}">${f.name}</option>`).join("");
   select.value = current;
@@ -764,7 +717,6 @@ function renderAll() {
   renderBarChart("testTypeChart", Object.entries(summary.totals.testCounts).map(([code, count]) => ({ label: TEST_LABELS[code] || code, value: count })));
   renderTestTypeTable(summary.facilities);
   renderFacilityTable(summary.facilities);
-  renderIssues(summary.issues);
 }
 
 async function refresh() {
@@ -790,8 +742,44 @@ document.getElementById("refreshBtn").addEventListener("click", refresh);
 document.getElementById("facilityFilter").addEventListener("change", renderAll);
 document.getElementById("dateRangeFilter").addEventListener("change", renderAll);
 
-refresh();
-setInterval(refresh, CONFIG.refreshIntervalMinutes * 60 * 1000);
+/* =========================================================================
+   LOGIN GATE — see the ACCESS_CODES comment above for what this does and
+   does not protect against. Kept deliberately simple: no persistence, so
+   re-entering the code is required after a page reload.
+   ========================================================================= */
+let refreshTimer = null;
+
+function showSessionBadge() {
+  const badge = document.getElementById("sessionBadge");
+  const label = CURRENT_ACCESS.role === "national" ? "National view" : CURRENT_ACCESS.label;
+  badge.innerHTML = `Signed in: ${label} <button id="logoutBtn" type="button">Switch</button>`;
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+}
+
+function logout() {
+  CURRENT_ACCESS = null;
+  if (refreshTimer) clearInterval(refreshTimer);
+  document.getElementById("appRoot").style.display = "none";
+  document.getElementById("loginGate").style.display = "flex";
+  document.getElementById("accessCodeInput").value = "";
+  document.getElementById("loginError").textContent = "";
+}
+
+document.getElementById("loginForm").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const code = document.getElementById("accessCodeInput").value.trim();
+  const match = ACCESS_CODES[code];
+  if (!match) {
+    document.getElementById("loginError").textContent = "Incorrect code — please try again.";
+    return;
+  }
+  CURRENT_ACCESS = match;
+  document.getElementById("loginGate").style.display = "none";
+  document.getElementById("appRoot").style.display = "block";
+  showSessionBadge();
+  refresh();
+  refreshTimer = setInterval(refresh, CONFIG.refreshIntervalMinutes * 60 * 1000);
+});
 </script>
 </body>
 </html>
