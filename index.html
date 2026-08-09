@@ -228,7 +228,7 @@
   <header>
     <div class="titles">
       <h1>Afinion™ 2 Evaluation — Monitoring Dashboard</h1>
-      <p>NASCOP · tracking enrollment, lab testing, and result review against a target of <strong id="targetPerFacilityLabel">100</strong> patients per facility</p>
+      <p>NASCOP · tracking lab testing against a target of <strong id="targetPerFacilityLabel">100</strong> patients per facility</p>
     </div>
     <div class="header-actions">
       <select id="facilityFilter"><option value="">All facilities</option></select>
@@ -268,8 +268,8 @@
     <div class="card">
       <div class="card-head">
         <div>
-          <h2>Enrollment progress toward target</h2>
-          <div class="subtitle">Unique participants referred, per facility</div>
+          <h2>Testing progress toward target</h2>
+          <div class="subtitle">Unique participants tested, per facility</div>
         </div>
       </div>
       <div class="meter-list" id="meterList"></div>
@@ -296,31 +296,18 @@
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <h2>Pipeline by facility</h2>
-            <div class="subtitle">Referred → Tested → Reviewed</div>
-          </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Quality control by facility</h2>
+          <div class="subtitle">Share of QC checks that passed</div>
         </div>
-        <div class="legend" id="pipelineLegend"></div>
-        <div class="grouped-wrap" id="pipelineChart"></div>
       </div>
-
-      <div class="card">
-        <div class="card-head">
-          <div>
-            <h2>Quality control by facility</h2>
-            <div class="subtitle">Share of QC checks that passed</div>
-          </div>
-        </div>
-        <div class="legend">
-          <span class="legend-item"><span class="swatch" style="background:var(--status-good)"></span>Pass</span>
-          <span class="legend-item"><span class="swatch" style="background:var(--status-critical)"></span>Fail</span>
-        </div>
-        <div id="qcChart"></div>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch" style="background:var(--status-good)"></span>Pass</span>
+        <span class="legend-item"><span class="swatch" style="background:var(--status-critical)"></span>Fail</span>
       </div>
+      <div id="qcChart"></div>
     </div>
 
     <div class="grid-2">
@@ -367,16 +354,6 @@
     <div class="card">
       <div class="card-head">
         <div>
-          <h2>Patient experience</h2>
-          <div class="subtitle">Share answering "Yes", from the clinician's Result Review form</div>
-        </div>
-      </div>
-      <div class="bar-chart" id="experienceChart"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div>
           <h2>Facility summary</h2>
           <div class="subtitle">All key metrics side by side</div>
         </div>
@@ -384,9 +361,8 @@
       <div class="table-scroll">
         <table class="data-table" id="facilityTable">
           <thead><tr>
-            <th>Facility</th><th>County</th><th>Enrolled</th><th>Target</th><th>Progress</th><th>Tested</th>
-            <th>Reviewed</th><th>Avg TAT (min)</th><th>Abnormal %</th><th>QC pass %</th>
-            <th>Kit performance</th><th>Satisfaction %</th>
+            <th>Facility</th><th>County</th><th>Tested</th><th>Target</th><th>Progress</th>
+            <th>Avg TAT (min)</th><th>Abnormal %</th><th>QC pass %</th><th>Kit performance</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -414,13 +390,14 @@
   <details id="configPanel" class="card">
     <summary>Data source &amp; setup</summary>
     <div style="margin-top:10px; line-height:1.6;">
-      <p>This dashboard reads the three ODK forms' submissions straight from Google — no backend, so it can be
-      hosted as a plain static site (e.g. GitHub Pages). Open <code>index.html</code> and edit the <code>CONFIG</code>
+      <p>This dashboard reads the Lab Officer Report's submissions straight from Google — no backend, so it can be
+      hosted as a plain static site (e.g. GitHub Pages). Only the Lab Officer data is used; any Referral or Result
+      Review data present is ignored. Open <code>index.html</code> and edit the <code>CONFIG</code>
       object near the top of the <code>&lt;script&gt;</code> block:</p>
       <ul>
-        <li><code>mode: "appscript"</code> (current default) — one Google Apps Script Web App URL returns all three tabs as JSON in a single request. Set <code>appsScriptUrl</code>. See <code>APPS_SCRIPT_SETUP.md</code> for the script code to deploy — the sheet does not need to be publicly shared with this method.</li>
-        <li><code>mode: "single"</code> — one spreadsheet with three tabs (Referral / Lab Officer / Result Review), read via Google's public gviz endpoint. Set <code>singleSheetId</code> and the three tab names in <code>tabs</code>. Requires the sheet to be shared "Anyone with the link — Viewer".</li>
-        <li><code>mode: "multi"</code> — three separate spreadsheets, same gviz method. Set the three IDs in <code>multiSheetIds</code>.</li>
+        <li><code>mode: "appscript"</code> (current default) — a Google Apps Script Web App URL returns the Lab Officer sheet as JSON. Set <code>appsScriptUrl</code>. See <code>APPS_SCRIPT_SETUP.md</code> for the script code to deploy — the sheet does not need to be publicly shared with this method.</li>
+        <li><code>mode: "single"</code> — one spreadsheet, read via Google's public gviz endpoint. Set <code>singleSheetId</code> and the Lab Officer tab name in <code>tabs.lab</code>. Requires the sheet to be shared "Anyone with the link — Viewer".</li>
+        <li><code>mode: "multi"</code> — a dedicated spreadsheet for the Lab Officer data, same gviz method. Set the ID in <code>multiSheetIds.lab</code>.</li>
       </ul>
       <p>Current config: <span id="configSummary"></span></p>
     </div>
@@ -558,33 +535,20 @@ async function loadAllData() {
 }
 
 /* =========================================================================
-   JOIN — merge the three forms' rows into one record per participant_id.
+   BUILD PATIENTS — this dashboard runs on the Lab Officer Report alone.
+   Referral and Result Review data (if present in the feed) are ignored.
+   One row per participant_id (last submission wins if there are duplicates).
    ========================================================================= */
-function buildPatientIndex(rows, key = "participant_id") {
+function buildPatients(lab) {
   const map = new Map();
-  rows.forEach(r => {
-    const id = normId(r[key]);
-    if (id) map.set(id, r);
-  });
-  return map;
-}
-
-function mergeData({ referral, lab, review }) {
-  const labById = buildPatientIndex(lab);
-  const reviewById = buildPatientIndex(review);
-
-  return referral.map(ref => {
-    const id = normId(ref.participant_id);
-    const l = labById.get(id) || {};
-    const rv = reviewById.get(id) || {};
-    return {
+  (lab || []).forEach(l => {
+    const id = normId(l.participant_id);
+    if (!id) return;
+    map.set(id, {
       participant_id: id,
-      facility_name: norm(ref.facility_name) || norm(l.facility_name) || norm(rv.facility_name) || "Unknown facility",
-      county: norm(ref.county) || norm(l.county) || norm(rv.county) || "",
-      referral_date: norm(ref.referral_date),
-      referred_for_testing: ref.referred_for_testing,
-      hasLab: !!labById.get(id),
-      hasReview: !!reviewById.get(id),
+      facility_name: norm(l.facility_name) || "Unknown facility",
+      county: norm(l.county) || "",
+      report_date: norm(l.report_date),
       turnaround_minutes: toNum(l.turnaround_minutes),
       hba1c_performed: l.hba1c_performed,
       crp_performed: l.crp_performed,
@@ -595,17 +559,11 @@ function mergeData({ referral, lab, review }) {
       technical_issues_encountered: l.technical_issues_encountered,
       technical_issues_specify: l.technical_issues_specify,
       device_serial: l.device_serial,
-      report_date: norm(l.report_date),
-      any_abnormal: isYes(rv.any_abnormal) || isYes(l.any_abnormal_result),
-      abnormal_biomarkers: norm(rv.abnormal_biomarkers) || norm(l.abnormal_biomarkers),
-      patient_satisfied: rv.patient_satisfied,
-      process_explained_clearly: rv.process_explained_clearly,
-      received_results_same_day: rv.received_results_same_day,
-      would_recommend: rv.would_recommend,
-      referred: rv.referred,
-      linkage_confirmed: rv.linkage_confirmed,
-    };
+      any_abnormal: isYes(l.any_abnormal_result),
+      abnormal_biomarkers: norm(l.abnormal_biomarkers),
+    });
   });
+  return Array.from(map.values());
 }
 
 /* =========================================================================
@@ -618,7 +576,7 @@ function applyFilters(patients) {
   return patients.filter(p => {
     if (facility && p.facility_name !== facility) return false;
     if (range === "all") return true;
-    const d = new Date(p.referral_date);
+    const d = new Date(p.report_date);
     if (isNaN(d)) return range === "all";
     if (range === "7") { const cutoff = new Date(now); cutoff.setDate(now.getDate() - 7); return d >= cutoff; }
     if (range === "30") { const cutoff = new Date(now); cutoff.setDate(now.getDate() - 30); return d >= cutoff; }
@@ -697,41 +655,29 @@ function summarize(patients) {
 
   const facilities = Array.from(byFacility.entries()).map(([name, rows]) => {
     const county = rows[0]?.county || "";
-    const tested = rows.filter(r => r.hasLab);
-    const reviewed = rows.filter(r => r.hasReview);
     const qcChecked = rows.filter(r => isYes(r.qc_performed));
     const qcPass = qcChecked.filter(r => norm(r.qc_result).toLowerCase() === "pass");
-    const abnormal = tested.filter(r => r.any_abnormal);
-    const satisfied = reviewed.filter(r => isYes(r.patient_satisfied));
-    const referredMgmt = reviewed.filter(r => isYes(r.referred));
-    const linked = referredMgmt.filter(r => isYes(r.linkage_confirmed));
-    const issues = tested.filter(r => isYes(r.technical_issues_encountered));
+    const abnormal = rows.filter(r => r.any_abnormal);
+    const issues = rows.filter(r => isYes(r.technical_issues_encountered));
     return {
       name, county,
-      enrolled: rows.length,
-      tested: tested.length,
-      reviewed: reviewed.length,
-      avgTat: avg(tested.map(r => r.turnaround_minutes)),
-      testCounts: countTests(tested),
-      abnormalPct: pct(abnormal.length, tested.length),
+      tested: rows.length,
+      avgTat: avg(rows.map(r => r.turnaround_minutes)),
+      testCounts: countTests(rows),
+      abnormalPct: pct(abnormal.length, rows.length),
       qcPassPct: pct(qcPass.length, qcChecked.length),
       qcFailPct: pct(qcChecked.length - qcPass.length, qcChecked.length),
       qcCheckedCount: qcChecked.length,
       qcPassCount: qcPass.length,
       issuesCount: issues.length,
-      satisfactionPct: pct(satisfied.length, reviewed.length),
-      linkagePct: pct(linked.length, referredMgmt.length),
+      issuesPct: pct(issues.length, rows.length),
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 
-  const tested = patients.filter(p => p.hasLab);
-  const reviewed = patients.filter(p => p.hasReview);
-  const abnormal = tested.filter(p => p.any_abnormal);
+  const abnormal = patients.filter(p => p.any_abnormal);
   const qcChecked = patients.filter(p => isYes(p.qc_performed));
   const qcPass = qcChecked.filter(p => norm(p.qc_result).toLowerCase() === "pass");
-  const satisfied = reviewed.filter(p => isYes(p.patient_satisfied));
-  const referredMgmt = reviewed.filter(p => isYes(p.referred));
-  const linked = referredMgmt.filter(p => isYes(p.linkage_confirmed));
+  const issuesAll = patients.filter(p => isYes(p.technical_issues_encountered));
 
   const biomarkerCounts = {};
   abnormal.forEach(p => {
@@ -747,22 +693,13 @@ function summarize(patients) {
   return {
     facilities,
     totals: {
-      enrolled: patients.length,
+      tested: patients.length,
       target: facilities.length * CONFIG.targetPerFacility,
-      tested: tested.length,
-      reviewed: reviewed.length,
-      avgTat: avg(tested.map(p => p.turnaround_minutes)),
-      testCounts: countTests(tested),
-      abnormalPct: pct(abnormal.length, tested.length),
+      avgTat: avg(patients.map(p => p.turnaround_minutes)),
+      testCounts: countTests(patients),
+      abnormalPct: pct(abnormal.length, patients.length),
       qcPassPct: pct(qcPass.length, qcChecked.length),
-      satisfactionPct: pct(satisfied.length, reviewed.length),
-      linkagePct: pct(linked.length, referredMgmt.length),
-      experience: {
-        satisfied: pct(satisfied.length, reviewed.length),
-        processExplained: pct(reviewed.filter(p => isYes(p.process_explained_clearly)).length, reviewed.length),
-        sameDay: pct(reviewed.filter(p => isYes(p.received_results_same_day)).length, reviewed.length),
-        recommend: pct(reviewed.filter(p => isYes(p.would_recommend)).length, reviewed.length),
-      },
+      issuesPct: pct(issuesAll.length, patients.length),
     },
     biomarkerCounts,
     issues,
@@ -776,13 +713,11 @@ function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.
 
 function renderKPIs(totals) {
   const tiles = [
-    { label: "Enrolled / Target", value: `${totals.enrolled} / ${totals.target}`, sub: `${pct(totals.enrolled, totals.target)}% of target` },
-    { label: "Tests completed", value: totals.tested, sub: "Lab Officer Reports submitted" },
-    { label: "Results reviewed", value: totals.reviewed, sub: "Result Review forms submitted" },
+    { label: "Patients tested / Target", value: `${totals.tested} / ${totals.target}`, sub: `${pct(totals.tested, totals.target)}% of target` },
     { label: "Avg. turnaround", value: totals.avgTat !== null ? `${totals.avgTat} min` : "—", sub: "Collection → result" },
     { label: "Abnormal results", value: `${totals.abnormalPct}%`, sub: "Of patients tested" },
     { label: "QC pass rate", value: `${totals.qcPassPct}%`, sub: "Of QC checks performed" },
-    { label: "Patient satisfaction", value: `${totals.satisfactionPct}%`, sub: "Reported satisfied" },
+    { label: "Technical issues", value: `${totals.issuesPct}%`, sub: "Of tests, device issue reported" },
   ];
   const row = document.getElementById("kpiRow");
   row.innerHTML = "";
@@ -799,8 +734,8 @@ function renderMeters(facilities) {
   const list = document.getElementById("meterList");
   list.innerHTML = "";
   facilities.forEach(f => {
-    const p = pct(f.enrolled, CONFIG.targetPerFacility);
-    const badge = progressBadge(f.enrolled, CONFIG.targetPerFacility);
+    const p = pct(f.tested, CONFIG.targetPerFacility);
+    const badge = progressBadge(f.tested, CONFIG.targetPerFacility);
     const row = el("div", "meter-row");
     row.appendChild(el("div", "meter-top",
       `<span><span class="fac">${f.name}</span><span class="county">${f.county}</span></span>
@@ -808,10 +743,10 @@ function renderMeters(facilities) {
     const track = el("div", "meter-track");
     const fill = el("div", `meter-fill${p >= 100 ? " over" : ""}`);
     fill.style.width = Math.min(p, 100) + "%";
-    fill.title = `${f.enrolled} of ${CONFIG.targetPerFacility} enrolled`;
+    fill.title = `${f.tested} of ${CONFIG.targetPerFacility} tested`;
     track.appendChild(fill);
     row.appendChild(track);
-    row.appendChild(el("div", "meter-count", `${f.enrolled} of ${CONFIG.targetPerFacility} patients enrolled`));
+    row.appendChild(el("div", "meter-count", `${f.tested} of ${CONFIG.targetPerFacility} patients tested`));
     list.appendChild(row);
   });
 }
@@ -856,42 +791,6 @@ function renderBarChart(containerId, items, opts = {}) {
   if (!items.length) container.appendChild(el("div", "subtitle", "No data for the current filter."));
 }
 
-function renderPipeline(facilities) {
-  const legend = document.getElementById("pipelineLegend");
-  legend.innerHTML = `
-    <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>Referred</span>
-    <span class="legend-item"><span class="swatch" style="background:var(--series-2)"></span>Tested</span>
-    <span class="legend-item"><span class="swatch" style="background:var(--series-3)"></span>Reviewed</span>`;
-  const wrap = document.getElementById("pipelineChart");
-  wrap.innerHTML = "";
-  const max = Math.max(...facilities.map(f => f.enrolled), 1);
-  facilities.forEach(f => {
-    const group = el("div", "grouped-row");
-    group.appendChild(el("div", "grouped-label", f.name));
-    const bars = el("div", "grouped-bars");
-    [
-      { label: "Referred", value: f.enrolled, color: "var(--series-1)" },
-      { label: "Tested", value: f.tested, color: "var(--series-2)" },
-      { label: "Reviewed", value: f.reviewed, color: "var(--series-3)" },
-    ].forEach(s => {
-      const item = el("div", "grouped-bar-item");
-      item.appendChild(el("div", "swatch-label", `<span class="swatch" style="background:${s.color}"></span>${s.label}`));
-      const track = el("div", "bar-track");
-      const fill = el("div", "bar-fill");
-      fill.style.width = Math.max((s.value / max) * 100, 2) + "%";
-      fill.style.background = s.color;
-      fill.title = `${s.label}: ${s.value}`;
-      track.appendChild(fill);
-      item.appendChild(track);
-      item.appendChild(el("div", "bar-val", s.value));
-      bars.appendChild(item);
-    });
-    group.appendChild(bars);
-    wrap.appendChild(group);
-  });
-  if (!facilities.length) wrap.appendChild(el("div", "subtitle", "No data for the current filter."));
-}
-
 function renderQC(facilities) {
   const wrap = document.getElementById("qcChart");
   wrap.innerHTML = "";
@@ -912,13 +811,13 @@ function renderFacilityTable(facilities) {
   const tbody = document.querySelector("#facilityTable tbody");
   tbody.innerHTML = "";
   facilities.forEach(f => {
-    const progress = progressBadge(f.enrolled, CONFIG.targetPerFacility);
+    const progress = progressBadge(f.tested, CONFIG.targetPerFacility);
     const performance = performanceBadge(f.qcCheckedCount, f.qcPassCount, f.issuesCount, f.tested);
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${f.name}</td><td>${f.county}</td><td>${f.enrolled}</td><td>${CONFIG.targetPerFacility}</td>
+    tr.innerHTML = `<td>${f.name}</td><td>${f.county}</td><td>${f.tested}</td><td>${CONFIG.targetPerFacility}</td>
       <td>${badgeHtml(progress)}</td>
-      <td>${f.tested}</td><td>${f.reviewed}</td><td>${f.avgTat ?? "—"}</td><td>${f.abnormalPct}%</td>
-      <td>${f.qcPassPct}%</td><td>${badgeHtml(performance)}</td><td>${f.satisfactionPct}%</td>`;
+      <td>${f.avgTat ?? "—"}</td><td>${f.abnormalPct}%</td>
+      <td>${f.qcPassPct}%</td><td>${badgeHtml(performance)}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -965,18 +864,11 @@ function renderAll() {
   renderKPIs(summary.totals);
   renderMeters(summary.facilities);
   renderPerformance(summary.facilities);
-  renderPipeline(summary.facilities);
   renderQC(summary.facilities);
   renderBarChart("tatChart", summary.facilities.filter(f => f.avgTat !== null).map(f => ({ label: f.name, value: f.avgTat })), { suffix: " min" });
   renderBarChart("biomarkerChart", Object.entries(summary.biomarkerCounts).map(([code, count]) => ({ label: BIOMARKER_LABELS[code] || code, value: count })));
   renderBarChart("testTypeChart", Object.entries(summary.totals.testCounts).map(([code, count]) => ({ label: TEST_LABELS[code] || code, value: count })));
   renderTestTypeTable(summary.facilities);
-  renderBarChart("experienceChart", [
-    { label: "Satisfied", value: summary.totals.experience.satisfied },
-    { label: "Process explained", value: summary.totals.experience.processExplained },
-    { label: "Same-day results", value: summary.totals.experience.sameDay },
-    { label: "Would recommend", value: summary.totals.experience.recommend },
-  ], { suffix: "%" });
   renderFacilityTable(summary.facilities);
   renderIssues(summary.issues);
 }
@@ -986,7 +878,7 @@ async function refresh() {
   const content = document.getElementById("dashboardContent");
   try {
     const raw = await loadAllData();
-    ALL_PATIENTS = mergeData(raw);
+    ALL_PATIENTS = buildPatients(raw.lab);
     populateFacilityFilter(summarize(ALL_PATIENTS).facilities);
     renderAll();
     errorPanel.style.display = "none";
