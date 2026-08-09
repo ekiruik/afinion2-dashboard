@@ -386,7 +386,7 @@
           <thead><tr>
             <th>Facility</th><th>County</th><th>Enrolled</th><th>Target</th><th>Progress</th><th>Tested</th>
             <th>Reviewed</th><th>Avg TAT (min)</th><th>Abnormal %</th><th>QC pass %</th>
-            <th>Kit performance</th><th>Satisfaction %</th><th>Linkage %</th>
+            <th>Kit performance</th><th>Satisfaction %</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -441,7 +441,7 @@ const CONFIG = {
   mode: "appscript",
 
   // --- mode: "appscript" ---
-  appsScriptUrl: "https://script.google.com/macros/s/AKfycbySJWow5cz8GjpJ7lfzs7v6VIAFYXlgUsTGJmgmIFh7jYu4ykqAWQDnGUXFmWGzKyESqg/exec",
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbybusfBogJjiTR1WFYbvc92DyBEnKhkLRmcNeS450zfilVtm8aEJjcS5JspR1hcDhn6wQ/exec",
 
   // --- mode: "single" ---
   singleSheetId: "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
@@ -783,7 +783,6 @@ function renderKPIs(totals) {
     { label: "Abnormal results", value: `${totals.abnormalPct}%`, sub: "Of patients tested" },
     { label: "QC pass rate", value: `${totals.qcPassPct}%`, sub: "Of QC checks performed" },
     { label: "Patient satisfaction", value: `${totals.satisfactionPct}%`, sub: "Reported satisfied" },
-    { label: "Linkage confirmed", value: `${totals.linkagePct}%`, sub: "Of those referred for care" },
   ];
   const row = document.getElementById("kpiRow");
   row.innerHTML = "";
@@ -919,7 +918,7 @@ function renderFacilityTable(facilities) {
     tr.innerHTML = `<td>${f.name}</td><td>${f.county}</td><td>${f.enrolled}</td><td>${CONFIG.targetPerFacility}</td>
       <td>${badgeHtml(progress)}</td>
       <td>${f.tested}</td><td>${f.reviewed}</td><td>${f.avgTat ?? "—"}</td><td>${f.abnormalPct}%</td>
-      <td>${f.qcPassPct}%</td><td>${badgeHtml(performance)}</td><td>${f.satisfactionPct}%</td><td>${f.linkagePct}%</td>`;
+      <td>${f.qcPassPct}%</td><td>${badgeHtml(performance)}</td><td>${f.satisfactionPct}%</td>`;
     tbody.appendChild(tr);
   });
 }
