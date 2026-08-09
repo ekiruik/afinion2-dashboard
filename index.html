@@ -745,7 +745,7 @@ let refreshTimer = null;
 function showSessionBadge() {
   const badge = document.getElementById("sessionBadge");
   const label = CURRENT_ACCESS.role === "national" ? "National view" : CURRENT_ACCESS.label;
-  badge.innerHTML = `Signed in: ${label} <button id="logoutBtn" type="button">Switch</button>`;
+  badge.innerHTML = `Signed in: ${label} <button id="logoutBtn" type="button">LOGOUT</button>`;
   document.getElementById("logoutBtn").addEventListener("click", logout);
 }
 
